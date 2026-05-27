@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ottimo — AI Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0c0f;--bg2:#131318;--bg3:#1a1a22;--bg4:#22222d;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#f0f0f5;--text2:#9090a8;--text3:#5a5a72;
+  --accent:#7c6af7;--accent2:#a89bf9;
+  --accent-bg:rgba(124,106,247,0.12);--accent-border:rgba(124,106,247,0.3);
+  --green:#3ecf8e;--green-bg:rgba(62,207,142,0.1);--red:#f66;
+  --sw:260px;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  /* HR colors */
+  --hbg:#f8f7f4;--hsur:#fff;--hcard:#f2f0ec;--hbor:#e5e1d8;
+  --hac:#2c5f2e;--hac2:#3d7a40;--hacl:#eaf2ea;
+  --htx:#1a1a18;--hmu:#6b6860;--hmu2:#a09d97;
+  --hok:#2c7a4b;--hwa:#b87a1a;--her:#b83c3c;--hr:12px;--hr2:8px;
+}
+html,body{height:100%;overflow:hidden;font-family:var(--font)}
+body{background:var(--bg);color:var(--text);display:flex;font-size:14px}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sw);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;height:100vh}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),#b06af7);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+.logo-text{font-size:17px;font-weight:600;color:var(--text)}
+.logo-tag{font-size:10px;background:var(--accent-bg);color:var(--accent2);border:1px solid var(--accent-border);border-radius:4px;padding:1px 5px;margin-left:auto;font-weight:500}
+.new-btn{margin:12px;padding:9px 12px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .15s}
+.new-btn:hover{background:#6a58e8}
+
+/* Nav sections */
+.sb-nav{padding:8px}
+.sb-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);padding:8px 8px 4px}
+.nav-btn{width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border:none;border-radius:7px;background:transparent;color:var(--text2);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;margin-bottom:1px;text-align:left}
+.nav-btn:hover{background:var(--bg3);color:var(--text)}
+.nav-btn.active{background:var(--accent-bg);color:var(--accent2);border:1px solid var(--accent-border)}
+.nav-btn .nb-icon{font-size:15px;flex-shrink:0}
+
+.chat-list{flex:1;overflow-y:auto;padding:4px 8px}
+.chat-list::-webkit-scrollbar{width:3px}
+.chat-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.chat-item{padding:8px 10px;border-radius:7px;cursor:pointer;display:flex;align-items:center;gap:8px;margin-bottom:1px;transition:background .1s;border:1px solid transparent}
+.chat-item:hover{background:var(--bg3)}
+.chat-item.active{background:var(--accent-bg);border-color:var(--accent-border)}
+.chat-item-icon{width:22px;height:22px;background:var(--bg4);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.chat-item-text{font-size:13px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.chat-item.active .chat-item-text{color:var(--accent2)}
+
+.sb-footer{padding:12px;border-top:1px solid var(--border)}
+.sb-model-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:5px}
+.sb-model-select{background:var(--bg3);border:1px solid var(--border2);border-radius:7px;color:var(--text);font-family:var(--font);font-size:12px;padding:7px 10px;width:100%;cursor:pointer;outline:none;appearance:none}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{height:52px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0;background:var(--bg)}
+.tb-title{font-size:14px;font-weight:500;color:var(--text)}
+.tb-badge{font-size:11px;color:var(--text3);font-family:var(--mono);background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:3px 8px}
+.tb-status{margin-left:auto;display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);background:var(--green-bg);border:1px solid rgba(62,207,142,.2);border-radius:20px;padding:3px 10px}
+.tb-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ── CHAT VIEW ── */
+.chat-view{flex:1;overflow-y:auto;padding:28px 0;scroll-behavior:smooth}
+.chat-view::-webkit-scrollbar{width:4px}
+.chat-view::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+.welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:20px;padding:40px 20px;text-align:center}
+.welcome-orb{width:64px;height:64px;background:linear-gradient(135deg,var(--accent),#b06af7);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;box-shadow:0 0 40px rgba(124,106,247,.3);animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.welcome-title{font-size:26px;font-weight:600;letter-spacing:-.5px}
+.welcome-sub{font-size:14px;color:var(--text2);max-width:360px;line-height:1.7}
+.starter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:500px;width:100%;margin-top:8px}
+.starter-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .15s;text-align:left}
+.starter-card:hover{border-color:var(--accent-border);background:var(--accent-bg);transform:translateY(-1px)}
+.starter-card-icon{font-size:18px;margin-bottom:6px}
+.starter-card-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px}
+.starter-card-sub{font-size:11px;color:var(--text3)}
+
+/* Messages */
+.msg-row{display:flex;padding:6px 24px;gap:14px;max-width:820px;margin:0 auto;width:100%;animation:msgIn .25s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-row.user{flex-direction:row-reverse}
+.msg-av{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;margin-top:2px}
+.msg-row.ai .msg-av{background:linear-gradient(135deg,var(--accent),#b06af7);color:#fff}
+.msg-row.user .msg-av{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-size:11px}
+.msg-content{flex:1;max-width:680px}
+.msg-row.user .msg-content{display:flex;justify-content:flex-end}
+.msg-bubble{font-size:14px;line-height:1.75;color:var(--text)}
+.msg-row.user .msg-bubble{background:var(--bg3);border:1px solid var(--border2);border-radius:12px 12px 4px 12px;padding:10px 14px;display:inline-block;max-width:100%}
+.msg-row.ai .msg-bubble{padding:2px 0}
+.msg-meta{font-size:11px;color:var(--text3);margin-top:6px;font-family:var(--mono);display:flex;align-items:center;gap:8px}
+.copy-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;font-family:var(--mono);padding:2px 6px;border-radius:4px;transition:all .1s}
+.copy-btn:hover{background:var(--bg3);color:var(--text2)}
+
+.typing-row{display:flex;padding:6px 24px;gap:14px;max-width:820px;margin:0 auto;width:100%}
+.typing-dots{display:flex;align-items:center;gap:5px;height:30px;padding:0 4px}
+.typing-dots span{width:7px;height:7px;border-radius:50%;background:var(--accent2);animation:blink 1.2s infinite;opacity:.4}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,100%{opacity:.3;transform:scale(.9)}50%{opacity:1;transform:scale(1.1)}}
+
+/* Input */
+.input-zone{padding:14px 20px 18px;border-top:1px solid var(--border);flex-shrink:0;max-width:820px;margin:0 auto;width:100%}
+.input-box{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;transition:border-color .15s}
+.input-box:focus-within{border-color:var(--accent-border)}
+.input-ta{background:transparent;border:none;outline:none;color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6;padding:14px 16px 10px;resize:none;min-height:50px;max-height:180px}
+.input-ta::placeholder{color:var(--text3)}
+.input-toolbar{display:flex;align-items:center;padding:8px 12px;gap:8px;border-top:1px solid var(--border)}
+.tb-tool-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text3);font-size:12px;padding:5px 10px;cursor:pointer;font-family:var(--font);transition:all .1s;display:flex;align-items:center;gap:5px}
+.tb-tool-btn:hover{border-color:var(--border2);color:var(--text2);background:var(--bg3)}
+.send-btn{margin-left:auto;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:var(--font);font-size:13px;font-weight:500;padding:7px 16px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
+.send-btn:hover{background:#6a58e8}
+.send-btn:disabled{background:var(--bg4);color:var(--text3);cursor:not-allowed}
+.input-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:8px;font-family:var(--mono)}
+.input-hint kbd{background:var(--bg3);border:1px solid var(--border2);border-radius:3px;padding:1px 5px;font-family:var(--mono);font-size:10px}
+
+/* ══════════════════════════════════════
+   HR TEST SAHIFASI (iframe kabi overlay)
+══════════════════════════════════════ */
+.hr-overlay{position:fixed;inset:0;z-index:200;display:none;background:var(--hbg);overflow-y:auto;font-family:'Nunito',sans-serif}
+.hr-overlay.open{display:block}
+.hr-topbar{background:#fff;border-bottom:1px solid var(--hbor);height:56px;display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;z-index:10;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.hr-logo{font-family:'Playfair Display',serif;font-size:18px;color:var(--hac);font-weight:700}
+.hr-back{margin-left:auto;background:none;border:1px solid var(--hbor);border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;color:var(--hmu);display:flex;align-items:center;gap:6px;transition:all .15s}
+.hr-back:hover{background:var(--hcard);color:var(--htx)}
+.hr-main{max-width:600px;margin:0 auto;padding:32px 20px}
+
+/* HR cards */
+.hcard{background:#fff;border:1px solid var(--hbor);border-radius:var(--hr);padding:24px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:16px}
+.hbtn{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:var(--hr2);padding:10px 18px;font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;cursor:pointer;transition:all .18s}
+.hbp{background:var(--hac);color:#fff}.hbp:hover{background:var(--hac2)}
+.hbg{background:transparent;color:var(--hmu);border:1px solid var(--hbor)}.hbg:hover{background:var(--hcard)}
+.hbfull{width:100%;justify-content:center}
+.hfl{margin-bottom:14px}
+.hfl label{display:block;font-size:11px;font-weight:700;color:var(--hmu);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.hinp{width:100%;background:var(--hbg);border:1.5px solid var(--hbor);border-radius:var(--hr2);padding:11px 13px;color:var(--htx);font-size:14px;font-family:'Nunito',sans-serif;font-weight:500;outline:none;transition:border .18s}
+.hinp:focus{border-color:var(--hac)}
+.hinp.err{border-color:var(--her)}
+.hinp::placeholder{color:var(--hmu2)}
+.hetx{font-size:11px;color:var(--her);font-weight:700;margin-top:3px}
+.hhint{font-size:11px;color:var(--hmu);margin-top:3px}
+.hbadge{display:inline-flex;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.bok{background:#e8f5ee;color:#2c7a4b;border:1px solid #b8ddc8}
+.bwa{background:#fdf3e3;color:#b87a1a;border:1px solid #f0d49a}
+.ber-b{background:#fdf0f0;color:#b83c3c;border:1px solid #f0c4c4}
+/* Steps dots */
+.hdots{display:flex;gap:7px;justify-content:center;margin-bottom:20px}
+.hdot{width:8px;height:8px;border-radius:50%;background:var(--hbor);transition:all .3s}
+.hdot.on{background:var(--hac);width:22px;border-radius:4px}
+.hdot.dn{background:var(--hac2)}
+.hpbar{height:4px;background:var(--hbor);border-radius:10px;overflow:hidden;margin:12px 0 5px}
+.hpfill{height:100%;background:linear-gradient(90deg,var(--hac),var(--hac2));border-radius:10px;transition:width .4s}
+/* Kasb grid */
+.hpg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
+.hpc{background:#fff;border:2px solid var(--hbor);border-radius:var(--hr);padding:14px 10px;cursor:pointer;text-align:center;transition:all .2s;position:relative}
+.hpc:hover{border-color:var(--hac2);background:var(--hacl)}
+.hpc.sel{border-color:var(--hac);background:var(--hacl)}
+.hpc .hck{position:absolute;top:6px;right:6px;width:18px;height:18px;background:var(--hac);border-radius:50%;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;opacity:0}
+.hpc.sel .hck{opacity:1}
+/* Savol */
+.hqcat{font-size:11px;color:var(--hac);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.hqtxt{font-family:'Playfair Display',serif;font-size:18px;line-height:1.45;margin-bottom:16px;color:var(--htx)}
+.hchoices{display:flex;flex-direction:column;gap:8px}
+.hch{background:var(--hbg);border:1.5px solid var(--hbor);border-radius:var(--hr2);padding:11px 14px;cursor:pointer;font-size:13px;font-family:'Nunito',sans-serif;font-weight:600;text-align:left;width:100%;transition:all .18s;color:var(--htx)}
+.hch:hover{border-color:var(--hac2);background:var(--hacl)}
+.hch.sel{background:var(--hacl);border-color:var(--hac);color:var(--hac)}
+
+/* ══════════════════════════════════════
+   ADMIN OVERLAY
+══════════════════════════════════════ */
+.admin-overlay{position:fixed;inset:0;z-index:300;display:none;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+.admin-overlay.open{display:flex}
+.admin-box{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:420px;overflow:hidden;animation:adIn .25s ease}
+@keyframes adIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.admin-tabs{display:flex;border-bottom:1px solid var(--border)}
+.admin-tab{flex:1;padding:14px;background:none;border:none;color:var(--text3);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.admin-tab.on{color:var(--accent2);border-bottom:2px solid var(--accent)}
+.admin-body{padding:24px}
+.admin-title{font-size:18px;font-weight:600;margin-bottom:6px}
+.admin-sub{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6}
+.admin-contact-card{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+.admin-contact-icon{width:38px;height:38px;border-radius:9px;background:var(--accent-bg);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.admin-contact-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.admin-contact-val{font-size:13px;color:var(--text2);font-family:var(--mono)}
+.admin-inp{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--font);font-size:14px;padding:10px 13px;outline:none;transition:border .15s;margin-bottom:10px}
+.admin-inp:focus{border-color:var(--accent-border)}
+.admin-err{font-size:12px;color:var(--red);margin-bottom:10px;display:none}
+.admin-login-btn{width:100%;background:var(--accent);border:none;border-radius:8px;color:#fff;font-family:var(--font);font-size:14px;font-weight:500;padding:11px;cursor:pointer;transition:background .15s}
+.admin-login-btn:hover{background:#6a58e8}
+.admin-close{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;line-height:1}
+
+/* Admin dashboard (ichki panel) */
+.admin-dash{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:680px;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;animation:adIn .25s ease}
+.admin-dash-top{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.admin-dash-title{font-size:15px;font-weight:600}
+.admin-dash-body{overflow-y:auto;flex:1;padding:16px 20px}
+.exam-row{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.exam-row:hover{border-color:var(--border2)}
+.exam-name{font-size:14px;font-weight:500;color:var(--text)}
+.exam-meta{font-size:12px;color:var(--text2);margin-top:3px;font-family:var(--mono)}
+.exam-score{font-size:20px;font-weight:700;font-family:var(--mono)}
+.exam-detail{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:none}
+.exam-detail.open{display:block}
+.qa-item{padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.qa-item:last-child{border:none}
+.qa-q{color:var(--text2);margin-bottom:3px}
+.qa-a{color:var(--accent2);font-weight:500}
+
+*{scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+</style>
+</head>
+<body>
+
+<!-- ════ SIDEBAR ════ -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="logo-mark">O</div>
+    <span class="logo-text">Ottimo</span>
+    <span class="logo-tag">AI</span>
+  </div>
+
+  <div class="sb-nav">
+    <div class="sb-label">Menyu</div>
+    <button class="nav-btn active" onclick="navClick('chat',this)">
+      <span class="nb-icon">💬</span> AI Agent
+    </button>
+    <button class="nav-btn" onclick="openHR()">
+      <span class="nb-icon">📋</span> Ishchi qabul qilish
+    </button>
+    <button class="nav-btn" onclick="openAdmin()">
+      <span class="nb-icon">👨‍💼</span> Administrator
+    </button>
+  </div>
+
+  <div class="sb-label" style="padding:12px 16px 4px">Suhbatlar</div>
+  <div class="chat-list" id="chatList"></div>
+
+  <div class="sb-footer">
+    <div class="sb-model-label">Model</div>
+    <select class="sb-model-select" id="modelSel">
+      <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+      <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+    </select>
+  </div>
+</aside>
+
+<!-- ════ MAIN CHAT ════ -->
+<main class="main">
+  <div class="topbar">
+    <span class="tb-title" id="tbTitle">Ottimo AI Agent</span>
+    <span class="tb-badge" id="tbModel">gemini-2.0-flash</span>
+    <div class="tb-status"><div class="tb-dot"></div>Online</div>
+  </div>
+
+  <div class="chat-view" id="chatView">
+    <div class="welcome" id="welcomeScreen">
+      <div class="welcome-orb">O</div>
+      <div>
+        <div class="welcome-title">Ottimo Agent</div>
+        <div class="welcome-sub">Ottimo Cafe haqida har qanday savolga javob beraman. Boshqa mavzularda javob bermayman.</div>
+      </div>
+      <div class="starter-grid">
+        <div class="starter-card" onclick="useStarter('Ottimo Cafeda qanday bo\'sh ish o\'rinlari bor?')">
+          <div class="starter-card-icon">💼</div>
+          <div class="starter-card-title">Bo'sh ish o'rinlar</div>
+          <div class="starter-card-sub">Lavozimlar va talablar</div>
+        </div>
+        <div class="starter-card" onclick="useStarter('Filiallar qayerda joylashgan?')">
+          <div class="starter-card-icon">📍</div>
+          <div class="starter-card-title">Filiallar</div>
+          <div class="starter-card-sub">Manzillar va xaritalar</div>
+        </div>
+        <div class="starter-card" onclick="useStarter('Ish vaqti va smenalar haqida aytib bering')">
+          <div class="starter-card-icon">⏰</div>
+          <div class="starter-card-title">Ish vaqti</div>
+          <div class="starter-card-sub">Smena jadvali</div>
+        </div>
+        <div class="starter-card" onclick="useStarter('Maosh va bonuslar haqida ma\'lumot bering')">
+          <div class="starter-card-icon">💰</div>
+          <div class="starter-card-title">Maosh</div>
+          <div class="starter-card-sub">To'lov va bonuslar</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-zone">
+    <div class="input-box">
+      <textarea class="input-ta" id="msgInput" placeholder="Ottimo haqida savol bering..." rows="1"
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <div class="input-toolbar">
+        <button class="tb-tool-btn" onclick="clearChat()">🗑 Tozalash</button>
+        <button class="send-btn" id="sendBtn" onclick="sendMsg()">
+          Yuborish
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="input-hint"><kbd>Enter</kbd> yuborish · <kbd>Shift+Enter</kbd> yangi qator</div>
+  </div>
+</main>
+
+<!-- ════ HR OVERLAY ════ -->
+<div class="hr-overlay" id="hrOverlay">
+  <div class="hr-topbar">
+    <div class="hr-logo">Ottimo HR</div>
+    <button class="hr-back" onclick="closeHR()">← Agentga qaytish</button>
+  </div>
+  <div class="hr-main">
+    <div id="hrContent"></div>
+  </div>
+</div>
+
+<!-- ════ ADMIN OVERLAY ════ -->
+<div class="admin-overlay" id="adminOverlay" onclick="adminBgClose(event)">
+  <div id="adminBox"></div>
+</div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getFirestore,collection,addDoc,getDocs,query,orderBy}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const db=getFirestore(initializeApp({
+  apiKey:"AIzaSyBkFbcT--VfrLe2ZMjxhmRAs1V7Svzx2Bg",
+  authDomain:"ottimo-hr.firebaseapp.com",projectId:"ottimo-hr",
+  storageBucket:"ottimo-hr.firebasestorage.app",
+  messagingSenderId:"130893452321",
+  appId:"1:130893452321:web:d70ddfc1fffc57a1c97f60"
+}));
+
+// ═══ CONFIG ═══
+const GEMINI_KEY = 'AIzaSyDCwFEq4bGl8YuiwrHdKP-xI_fkRGi7IRc';
+const TG_TOKEN = "8173395748:AAFCbwHLLTiEOu0L9mjD2_Yy-a-UZXLKghU";
+const TG_CHAT = "206004279";
+const MGR_PASS = "688466";
+
+const OTTIMO_SYSTEM = `Sen Ottimo Cafe uchun maxsus AI agentsan. FAQAT Ottimo Cafe haqidagi savollarga javob berasan. Agar savol Ottimo Cafe bilan bog'liq bo'lmasa, albatta quyidagi javobni ber: "Mingbor uzur, men faqat Ottimo Cafe haqidagi savollarga javob bera olaman. Ottimo haqida biror narsani so'rasangiz, xursandlik bilan javob beraman! 🙏"
+
+Ottimo Cafe haqida to'liq ma'lumot:
+━━━━━━━━━━━━━━━
+📍 FILIALLAR (3 ta):
+1. Nukus kinoteatri yonida — Toshkent, Shifer ko'chasi 71
+   Xarita: https://yandex.uz/maps/org/144255252741
+2. Parus ostida — Toshkent, Katartal ko'chasi 60A/1
+   Xarita: https://yandex.uz/maps/org/45535920435
+3. Talant International School ro'parasida — Toshkent, Buyuk Ipak Yo'li 31
+
+📞 Telefon: +998 99 060 33 53
+💬 Telegram: @Ottimo_hr
+🔗 Murojaat: https://t.me/ottimo_uz
+
+💼 BO'SH ISH O'RINLARI:
+• ☕ Barista
+• 💳 Kassir
+• 🍰 Konditer-sotuvchi
+
+📋 ISH SHARTLARI:
+• Yosh: 20-35 yosh
+• Rus tilini bilish shart
+• Chekmaydigan bo'lishi kerak
+• Spirtli ichimlik iste'mol qilmaydigan bo'lishi kerak
+• Probatsiya: 1 oy
+
+⏰ ISH VAQTI:
+• ☀️ 1-smena (kunduzi): 07:30 — 16:30
+• 🌙 2-smena (kechki): 16:00 — 24:00
+• Jadval har dushanba yangilanadi
+• Kechikish jarima: 50 000 so'm
+
+💰 MAOSH VA IMTIYOZLAR:
+• Maosh har 10 kunda to'lanadi
+• Har smenada bepul ovqat
+• Rasmiy mehnat shartnomasi
+• Karyera o'sishi imkoniyati
+• Do'stona jamoa (25+ xodim)
+━━━━━━━━━━━━━━━
+Javoblar o'zbek tilida, do'stona, qisqa va aniq bo'lsin. Emoji ishlatib jonlantir.`;
+
+// ═══ KASBLAR ═══
+const POS = {
+  barista:{l:"Barista",i:"☕",q:[
+    {id:"b1",c:"Texnika",t:"Espresso tayyorlashda eng muhim omil nima?",o:["Tortish vaqti (25-30 sek) va hajmi (25-30ml)","Kofe turi va qovurish darajasi","Suv harorati va bosimi","Kofe maydalash darajasi"]},
+    {id:"b2",c:"Sifat",t:"Mijoz qahvasi ta'mini yoqtirmasa nima qilasiz?",o:["Uzr so'rab darhol yangi tayyorlayman","Isitish uchun mikroto'lqin taklif qilaman","Kechirim so'rayman","Menejerni chaqiraman"]},
+    {id:"b3",c:"Bilim",t:"Latte va cappuccino farqi nima?",o:["Latte ko'proq sut, cappuccino ko'proq ko'pik","Ikkalasi bir xil, faqat nomi farq qiladi","Cappuccino kuchliroq, latte yumshoqroq","Latte sovuq, cappuccino issiq servis qilinadi"]},
+    {id:"b4",c:"Tozalik",t:"Espresso mashinasini qachon tozalash kerak?",o:["Har smena boshida, oxirida va zarur bo'lganda","Faqat ko'zga ko'rinadigan kir bo'lganda","Hafta oxirida bir marta","Texnik xizmat vaqtida"]},
+    {id:"b5",c:"Mijoz",t:"Allergiyasi bor mijoz kelsa nima qilasiz?",o:["Ingredientlarni tushuntirib, muqobil taklif qilaman","Doktor maslahatiga yo'naltiraman","Hech narsa demayman","Faqat kutilgan mahsulotni beraman"]},
+  ]},
+  kassir:{l:"Kassir",i:"💳",q:[
+    {id:"k1",c:"Hisob",t:"Mijoz to'g'ri pul berganini qanday tekshirasiz?",o:["Har doim mashinada sanayman va chek beraman","Ko'zdan kechirib qoldirib qo'yaman","Mijoz aytganiga ishonaman","Faqat katta kupyuralarni tekshiraman"]},
+    {id:"k2",c:"Xizmat",t:"Navbatda bir nechta mijoz kutayotganida nima qilasiz?",o:["Tezlik bilan, lekin aniq xizmat ko'rsataman","Eng avval tanishimni o'tkazaman","Smenani almashtirishni so'rayman","Tezlikni oshirish uchun ba'zi qadamlarni o'tkazib ketaman"]},
+    {id:"k3",c:"Xato",t:"Kassada kamomad aniqlanganida nima qilasiz?",o:["Darhol menejerga xabar beraman va hisobot tuzaman","Ertasi kuni o'zim to'ldiraman","Kimdir olgan bo'lsa kerak deb o'ylayman","Yashirishga harakat qilaman"]},
+    {id:"k4",c:"Mijoz",t:"Mijoz chek so'rasa nima qilasiz?",o:["Har doim chek beraman, so'ramasdan ham","Faqat so'raganda beraman","Printer buzuq deb aytaman","Elektron chek taklif qilaman"]},
+    {id:"k5",c:"Intizom",t:"Smena boshida kassani qanday qabul qilasiz?",o:["Pul sanab, avvalgi smenadan qabul aktini imzolayman","Shoshib kassa seyfini ochaman","Menejer aytganiga ishonaman","Oldingi kassirdan og'zaki qabul qilaman"]},
+  ]},
+  konditer:{l:"Konditer",i:"🍰",q:[
+    {id:"p1",c:"Bilim",t:"Tort uchun krem tayyorlashda eng muhim narsa nima?",o:["Mahsulotlar harorati va proportsiyaniga rioya qilish","Ko'proq shakar qo'shish","Tez-tez aralashtirish","Faqat sifatli mahsulot ishlatish"]},
+    {id:"p2",c:"Gigiyena",t:"Mahsulotlar bilan ishlashdan oldin nima qilasiz?",o:["Qo'l yuvib, qo'lqop kiyib, ish kiyimini kiyaman","Faqat qo'l yuvaman","Hech narsa, shunday boshlayman","Dezinfektant ishlataman"]},
+    {id:"p3",c:"Sifat",t:"Tayyor mahsulot ko'rinishi yaxshi bo'lmasa nima qilasiz?",o:["Qayta qilaman yoki menejerga ko'rsataman","Shunday ham o'tib ketadi deb qo'yaman","Bezatib yashiraman","Mijozga aytaman"]},
+    {id:"p4",c:"Saqlash",t:"Qolgan mahsulotlarni qanday saqlaysiz?",o:["Belgilangan temperatura va muddatga ko'ra saqlash","Muzlatgichga siqib qo'yaman","Ertasi kuni ko'ramiz deb qoldiraman","Hamkasbga topshiraman"]},
+    {id:"p5",c:"Mijoz",t:"Mijoz maxsus buyurtma bersa nima qilasiz?",o:["Imkoniyatlarni aniqlab, muddati va narxini kelishaman","Imkonsiz deb rad etaman","Xohlaganini qilishga harakat qilaman","Menejerga yo'naltiraman"]},
+  ]},
+  menejer:{l:"Menejer",i:"👔",q:[
+    {id:"m1",c:"Rahbarlik",t:"Xodim ish rejasini bajarmasa birinchi nima qilasiz?",o:["Sababini aniqlab, yordam beraman","Ogohlantirib, muddatni uzaytiraman","Boshqa xodimga topshiraman","Darhol jazo chorasi ko'raman"]},
+    {id:"m2",c:"Qaror",t:"Ikki muhim ish bir vaqtda tushsa qanday harakat qilasiz?",o:["Muhimligiga qarab ustuvorlik belgilayman","Ikkalasini parallel bajaraman","Jamoaga taqsimlayman","Rahbardan ko'rsatma kutaman"]},
+    {id:"m3",c:"Muloqot",t:"Xodim siz bilan rozi bo'lmasa qanday muloqot qilasiz?",o:["Tinglash va birgalikda yechim topaman","O'z fikrimni to'g'ri deb davom ettiraman","Ovoz berish o'tkazaman","Rahbariyatga hisobot beraman"]},
+    {id:"m4",c:"Mijoz",t:"VIP mijoz shikoyat bilan kelsa nima qilasiz?",o:["Zudlik bilan shaxsan muloqot qilaman","Mas'ul xodimni yo'naltiraman","Kechirim so'rab, yechim taklif qilaman","Standart jarayon bo'yicha hal qilaman"]},
+    {id:"m5",c:"Natija",t:"Oylik ko'rsatkichlar past bo'lsa rahbariyatga nima deysiz?",o:["Sabablarni tahlil qilib, yechim rejasi taqdim etaman","Faqat natijani aytaman","Jamoani ayblayman","Keyingi oy yaxshilanadi deb va'da qilaman"]},
+  ]},
+};
+
+// ═══ CHAT STATE ═══
+let conversations = [];
+let currentConvId = null;
+let isLoading = false;
+let chatHistory = [];
+
+// ═══ GEMINI API ═══
+async function callGemini(userText, history) {
+  const model = document.getElementById('modelSel').value;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`;
+
+  const histPart = history.slice(-6).map(h =>
+    `Foydalanuvchi: ${h.user}\nAgent: ${h.agent}`).join('\n\n');
+
+  const prompt = OTTIMO_SYSTEM +
+    (histPart ? '\n\nOldingi suhbat:\n' + histPart : '') +
+    `\n\nFoydalanuvchi: ${userText}\nAgent:`;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      contents: [{parts: [{text: prompt}]}],
+      generationConfig: {temperature: 0.7, maxOutputTokens: 800}
+    })
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(()=>({}));
+    throw new Error(e.error?.message || `HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Javob kelmadi.';
+}
+
+// ═══ CHAT UI ═══
+function newChat() {
+  const id = Date.now().toString();
+  conversations.push({id, title: 'Yangi suhbat', messages: []});
+  currentConvId = id;
+  chatHistory = [];
+  renderChatList();
+  renderMessages();
+  document.getElementById('tbTitle').textContent = 'Ottimo AI Agent';
+}
+
+function renderChatList() {
+  const el = document.getElementById('chatList');
+  el.innerHTML = '';
+  [...conversations].reverse().forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'chat-item' + (c.id === currentConvId ? ' active' : '');
+    d.innerHTML = `<div class="chat-item-icon">💬</div><div class="chat-item-text">${c.title}</div>`;
+    d.onclick = () => loadConv(c.id);
+    el.appendChild(d);
+  });
+}
+
+function loadConv(id) {
+  currentConvId = id;
+  const c = conversations.find(x => x.id === id);
+  chatHistory = c ? c.messages.map(m => ({user: m.user, agent: m.agent})) : [];
+  renderChatList();
+  renderMessages();
+  document.getElementById('tbTitle').textContent = c?.title || 'Suhbat';
+}
+
+function renderMessages() {
+  const cv = document.getElementById('chatView');
+  const c = conversations.find(x => x.id === currentConvId);
+  cv.innerHTML = '';
+  if (!c || c.messages.length === 0) {
+    cv.innerHTML = `<div class="welcome" id="welcomeScreen">
+      <div class="welcome-orb">O</div>
+      <div>
+        <div class="welcome-title">Ottimo Agent</div>
+        <div class="welcome-sub">Ottimo Cafe haqida har qanday savolga javob beraman. Boshqa mavzularda javob bermayman.</div>
+      </div>
+      <div class="starter-grid">
+        <div class="starter-card" onclick="useStarter('Ottimo Cafeda qanday bo\\'sh ish o\\'rinlari bor?')">
+          <div class="starter-card-icon">💼</div><div class="starter-card-title">Bo'sh ish o'rinlar</div><div class="starter-card-sub">Lavozimlar va talablar</div>
+        </div>
+        <div class="starter-card" onclick="useStarter('Filiallar qayerda joylashgan?')">
+          <div class="starter-card-icon">📍</div><div class="starter-card-title">Filiallar</div><div class="starter-card-sub">Manzillar va xaritalar</div>
+        </div>
+        <div class="starter-card" onclick="useStarter('Ish vaqti va smenalar haqida aytib bering')">
+          <div class="starter-card-icon">⏰</div><div class="starter-card-title">Ish vaqti</div><div class="starter-card-sub">Smena jadvali</div>
+        </div>
+        <div class="starter-card" onclick="useStarter('Maosh va bonuslar haqida ma\\'lumot bering')">
+          <div class="starter-card-icon">💰</div><div class="starter-card-title">Maosh</div><div class="starter-card-sub">To'lov va bonuslar</div>
+        </div>
+      </div>
+    </div>`;
+    return;
+  }
+  c.messages.forEach(m => appendMsgEl(m.role, m.content, false));
+  cv.scrollTop = cv.scrollHeight;
+}
+
+function appendMsgEl(role, content, animate = true) {
+  const cv = document.getElementById('chatView');
+  document.getElementById('welcomeScreen')?.remove();
+  const row = document.createElement('div');
+  row.className = `msg-row ${role}`;
+  if (!animate) row.style.animation = 'none';
+  const time = new Date().toLocaleTimeString('uz', {hour:'2-digit',minute:'2-digit'});
+  row.innerHTML = `
+    <div class="msg-av">${role==='user'?'Siz':'AI'}</div>
+    <div class="msg-content">
+      <div class="msg-bubble">${fmtText(content)}</div>
+      ${role==='ai'?`<div class="msg-meta"><span>${time}</span>
+        <button class="copy-btn" onclick="cpText(this,\`${content.replace(/`/g,'\\`')}\`)">nusxa</button>
+      </div>`:''}
+    </div>`;
+  cv.appendChild(row);
+  cv.scrollTop = cv.scrollHeight;
+}
+
+function fmtText(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/```([\s\S]*?)```/g,'<pre style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:12px;margin:8px 0;overflow-x:auto;font-family:var(--mono);font-size:12px">$1</pre>')
+    .replace(/`([^`]+)`/g,'<code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-family:var(--mono);font-size:12px">$1</code>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\n/g,'<br>');
+}
+
+window.cpText = async (btn, text) => {
+  await navigator.clipboard.writeText(text).catch(()=>{});
+  btn.textContent = '✓ nusxalandi'; setTimeout(()=>btn.textContent='nusxa',1500);
+};
+
+window.useStarter = function(q) {
+  document.getElementById('msgInput').value = q;
+  window.sendMsg();
+};
+
+window.clearChat = function() {
+  const c = conversations.find(x=>x.id===currentConvId);
+  if(c){c.messages=[];chatHistory=[];}
+  renderMessages();
+};
+
+window.sendMsg = async function() {
+  const inp = document.getElementById('msgInput');
+  const text = inp.value.trim();
+  if (!text || isLoading) return;
+  if (!currentConvId) newChat();
+
+  const c = conversations.find(x=>x.id===currentConvId);
+  if (!c) return;
+  if (c.messages.length === 0) {
+    c.title = text.slice(0,34)+(text.length>34?'…':'');
+    document.getElementById('tbTitle').textContent = c.title;
+    renderChatList();
+  }
+
+  inp.value=''; inp.style.height='auto';
+  isLoading=true;
+  document.getElementById('sendBtn').disabled=true;
+  c.messages.push({role:'user',content:text});
+  appendMsgEl('user',text);
+
+  const typRow = document.createElement('div');
+  typRow.className='typing-row'; typRow.id='typRow';
+  typRow.innerHTML=`<div class="msg-av" style="background:linear-gradient(135deg,var(--accent),#b06af7);color:#fff;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0">AI</div>
+    <div class="typing-dots"><span></span><span></span><span></span></div>`;
+  document.getElementById('chatView').appendChild(typRow);
+  document.getElementById('chatView').scrollTop=99999;
+
+  try {
+    const reply = await callGemini(text, chatHistory);
+    typRow.remove();
+    chatHistory.push({user:text,agent:reply});
+    c.messages.push({role:'ai',content:reply});
+    appendMsgEl('ai',reply);
+  } catch(e) {
+    typRow.remove();
+    appendMsgEl('ai',`⚠️ Xato: ${e.message}`);
+  }
+  isLoading=false;
+  document.getElementById('sendBtn').disabled=false;
+  inp.focus();
+};
+
+window.handleKey = e => {if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();window.sendMsg();}};
+window.autoResize = el => {el.style.height='auto';el.style.height=Math.min(el.scrollHeight,180)+'px';};
+window.navClick = (p, btn) => {
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+};
+
+document.getElementById('modelSel').onchange = function(){
+  document.getElementById('tbModel').textContent = this.value;
+};
+
+// ═══════════════════════════════════════
+//  HR TEST
+// ═══════════════════════════════════════
+const HR = {
+  step:1, nm:'',em:'',ph:'',bd:'',ad:'',pos:'',
+  errs:{}, ans:{}, qi:0, result:null
+};
+
+function ex(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function ve(e){return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((e||'').trim())}
+function vp(p){return /^\+?[0-9]{9,13}$/.test((p||'').replace(/[\s\-\(\)]/g,''))}
+function sb(s){
+  if(s>=85)return '<span class="hbadge bok">✓ Qabul</span>';
+  if(s>=65)return '<span class="hbadge bwa">◎ Ko\'rib chiqiladi</span>';
+  return '<span class="hbadge ber-b">✗ Rad</span>';
+}
+function calcScore(ans,qs){
+  let t=0,c=0;
+  qs.forEach(q=>{const i=parseInt(ans[q.id]);if(!isNaN(i)&&i>=0){t+=((q.o.length-i)/q.o.length)*100;c++;}});
+  return c?Math.round(t/c):50;
+}
+
+function hrRender(){document.getElementById('hrContent').innerHTML=hrHTML();}
+
+function hrHTML(){
+  if(HR.step===1)return hrStep1();
+  if(HR.step===2)return hrStep2();
+  if(HR.step===3)return hrStep3();
+  if(HR.step===4)return hrStep4();
+  return hrStep1();
+}
+
+function hrStep1(){
+  const e=HR.errs;
+  return `<div class="hcard">
+    <div class="hdots"><div class="hdot on"></div><div class="hdot"></div><div class="hdot"></div></div>
+    <p style="font-size:11px;font-weight:700;color:var(--hmu);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px">Shaxsiy ma'lumotlar</p>
+    <div class="hfl"><label>Ism va familiya *</label>
+      <input class="hinp${e.nm?' err':''}" id="h1" type="text" placeholder="To'liq ismingiz" value="${ex(HR.nm)}"/>
+      ${e.nm?`<div class="hetx">⚠ ${e.nm}</div>`:''}
+    </div>
+    <div class="hfl"><label>Email *</label>
+      <input class="hinp${e.em?' err':''}" id="h2" type="email" placeholder="email@gmail.com" value="${ex(HR.em)}"/>
+      ${e.em?`<div class="hetx">⚠ ${e.em}</div>`:'<div class="hhint">Format: ism@gmail.com</div>'}
+    </div>
+    <div class="hfl"><label>Telefon *</label>
+      <input class="hinp${e.ph?' err':''}" id="h3" type="tel" placeholder="+998901234567" value="${ex(HR.ph)}"/>
+      ${e.ph?`<div class="hetx">⚠ ${e.ph}</div>`:''}
+    </div>
+    <div class="hfl"><label>Tug'ilgan sana *</label>
+      <input class="hinp${e.bd?' err':''}" id="h4" type="date" value="${ex(HR.bd)}"/>
+      ${e.bd?`<div class="hetx">⚠ ${e.bd}</div>`:''}
+    </div>
+    <div class="hfl"><label>Manzil *</label>
+      <input class="hinp${e.ad?' err':''}" id="h5" type="text" placeholder="Toshkent, Chilonzor" value="${ex(HR.ad)}"/>
+      ${e.ad?`<div class="hetx">⚠ ${e.ad}</div>`:''}
+    </div>
+    <button class="hbtn hbp hbfull" style="margin-top:8px" onclick="hrNext1()">Davom etish →</button>
+  </div>`;
+}
+
+function hrStep2(){
+  let cards='';
+  Object.keys(POS).forEach(k=>{
+    const p=POS[k];
+    cards+=`<div class="hpc${HR.pos===k?' sel':''}" onclick="hrSel('${k}')">
+      <div class="hck">✓</div>
+      <div style="font-size:26px;margin-bottom:6px">${p.i}</div>
+      <div style="font-size:13px;font-weight:700;color:var(--htx)">${p.l}</div>
+    </div>`;
+  });
+  return `<div class="hcard">
+    <div class="hdots"><div class="hdot dn"></div><div class="hdot on"></div><div class="hdot"></div></div>
+    <p style="font-size:11px;font-weight:700;color:var(--hmu);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Kasbingizni tanlang</p>
+    ${HR.errs.pos?'<div class="hetx" style="margin-bottom:10px">⚠ Kasbni tanlang</div>':''}
+    <div class="hpg">${cards}</div>
+    <div style="display:flex;gap:8px">
+      <button class="hbtn hbg" onclick="HR.step=1;hrRender()">← Orqaga</button>
+      <button class="hbtn hbp" style="flex:1;justify-content:center" onclick="hrNext2()">Imtihonni boshlash →</button>
+    </div>
+  </div>`;
+}
+
+function hrStep3(){
+  const qs=POS[HR.pos].q;
+  const q=qs[HR.qi];
+  if(!q){hrSubmit();return '<div style="text-align:center;padding:40px;font-size:28px">⏳</div>';}
+  const pct=Math.round((HR.qi/qs.length)*100);
+  let opts='';
+  q.o.forEach((o,i)=>{
+    opts+=`<button class="hch${HR.ans[q.id]===String(i)?' sel':''}" onclick="hrAns('${q.id}','${i}')">${ex(o)}</button>`;
+  });
+  return `<div class="hcard">
+    <div class="hdots"><div class="hdot dn"></div><div class="hdot dn"></div><div class="hdot on"></div></div>
+    <div class="hpbar"><div class="hpfill" style="width:${pct}%"></div></div>
+    <p style="font-size:11px;color:var(--hmu);font-weight:600;margin-bottom:14px">Savol ${HR.qi+1} / ${qs.length}</p>
+    <div class="hqcat">${ex(q.c)}</div>
+    <div class="hqtxt">${ex(q.t)}</div>
+    <div class="hchoices">${opts}</div>
+    <div style="display:flex;gap:8px;margin-top:18px">
+      <button class="hbtn hbg" ${HR.qi===0?'disabled':''} onclick="hrPrev()">← Oldingi</button>
+      <button class="hbtn hbp" style="flex:1;justify-content:center" onclick="hrNextQ()">
+        ${HR.qi===qs.length-1?'Yakunlash →':'Keyingi →'}
+      </button>
+    </div>
+  </div>`;
+}
+
+function hrStep4(){
+  if(!HR.result)return '<div style="text-align:center;padding:40px;font-size:28px">⏳</div>';
+  const r=HR.result;
+  const c=r.sc>=85?'#2c7a4b':r.sc>=65?'#b87a1a':'#b83c3c';
+  const ic=r.sc>=85?'🏆':r.sc>=65?'📊':'📋';
+  return `<div class="hcard" style="text-align:center">
+    <div style="font-size:52px;margin-bottom:10px">${ic}</div>
+    <div style="font-family:'Playfair Display',serif;font-size:64px;color:${c};line-height:1;font-weight:700">${r.sc}%</div>
+    <div style="margin:12px 0">${sb(r.sc)}</div>
+    <p style="font-size:13px;color:var(--hmu);margin-top:14px;line-height:1.7">
+      ${r.sc>=85?'Tabriklaymiz! Natijalaringiz rahbarga yuborildi. Tez orada siz bilan bog\'lanishadi.'
+        :r.sc>=65?'Yaxshi natija! Rahbar siz bilan ko\'rib chiqadi.'
+        :'Natijalaringiz rahbarga yuborildi. Rahbar siz bilan bog\'lanadi.'}
+    </p>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="hbtn hbg" style="flex:1;justify-content:center" onclick="hrRestart()">Qayta boshlash</button>
+      <button class="hbtn hbp" style="flex:1;justify-content:center" onclick="closeHR()">← Agentga qaytish</button>
+    </div>
+  </div>`;
+}
+
+window.hrSel = k=>{HR.pos=k;HR.errs.pos=false;hrRender();};
+window.hrAns = (id,v)=>{HR.ans[id]=v;hrRender();};
+window.hrPrev = ()=>{if(HR.qi>0){HR.qi--;hrRender();}};
+window.hrNext1 = function(){
+  HR.nm=(document.getElementById('h1')||{}).value?.trim()||'';
+  HR.em=(document.getElementById('h2')||{}).value?.trim()||'';
+  HR.ph=(document.getElementById('h3')||{}).value?.trim()||'';
+  HR.bd=(document.getElementById('h4')||{}).value?.trim()||'';
+  HR.ad=(document.getElementById('h5')||{}).value?.trim()||'';
+  const er={};
+  if(HR.nm.length<3)er.nm="Ism kamida 3 harf bo'lsin";
+  if(!ve(HR.em))er.em="To'g'ri email kiriting";
+  if(!vp(HR.ph))er.ph="To'g'ri telefon kiriting";
+  if(!HR.bd)er.bd="Tug'ilgan sanani kiriting";
+  if(HR.ad.length<3)er.ad="Manzilni kiriting";
+  HR.errs=er;
+  if(Object.keys(er).length>0){hrRender();return;}
+  HR.step=2;hrRender();
+};
+window.hrNext2 = function(){
+  if(!HR.pos){HR.errs={pos:true};hrRender();return;}
+  HR.errs={};HR.step=3;HR.ans={};HR.qi=0;hrRender();
+};
+window.hrNextQ = function(){
+  const qs=POS[HR.pos].q;
+  if(HR.qi>=qs.length-1){HR.step=4;hrRender();hrSubmit();}
+  else{HR.qi++;hrRender();}
+};
+window.hrRestart = function(){
+  HR.step=1;HR.nm='';HR.em='';HR.ph='';HR.bd='';HR.ad='';
+  HR.pos='';HR.errs={};HR.ans={};HR.qi=0;HR.result=null;
+  hrRender();
+};
+
+async function hrSubmit(){
+  const qs=POS[HR.pos].q;
+  const sc=calcScore(HR.ans,qs);
+  const pos=POS[HR.pos];
+  const data={nm:HR.nm,em:HR.em,ph:HR.ph,bd:HR.bd,ad:HR.ad,
+    position:HR.pos,answers:HR.ans,sc,
+    date:new Date().toLocaleDateString('uz-UZ'),ts:Date.now()};
+  try{
+    await addDoc(collection(db,'exams'),data);
+    let msg=`<b>🆕 Yangi imtihon natijasi</b>\n\n👤 <b>Ism:</b> ${HR.nm}\n💼 <b>Kasb:</b> ${pos.l}\n📧 <b>Email:</b> ${HR.em}\n📞 <b>Telefon:</b> ${HR.ph}\n📅 <b>Sana:</b> ${HR.bd}\n📍 <b>Manzil:</b> ${HR.ad}\n📊 <b>Ball:</b> ${sc}%\n✅ <b>Holat:</b> ${sc>=85?'✅ Qabul':sc>=65?'⚠️ Ko\'rib chiqiladi':'❌ Rad'}\n\n<b>Javoblar:</b>\n`;
+    qs.forEach((q,i)=>{const idx=parseInt(HR.ans[q.id]);const a=(!isNaN(idx)&&q.o[idx])?q.o[idx]:'—';msg+=`${i+1}. ${q.t}\n→ ${a}\n\n`;});
+    await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'HTML'})
+    });
+  }catch(err){console.warn(err);}
+  HR.result={sc};hrRender();
+}
+
+// ═══════════════════════════════════════
+//  ADMIN PANEL
+// ═══════════════════════════════════════
+let adminTab = 'contact';
+let adminLoggedIn = false;
+let adminExams = [];
+let openExamId = null;
+
+function renderAdmin(){
+  document.getElementById('adminBox').innerHTML = adminLoggedIn ? adminDash() : adminModal();
+}
+
+function adminModal(){
+  return `<div class="admin-box" style="position:relative">
+    <button class="admin-close" onclick="closeAdmin()">✕</button>
+    <div class="admin-tabs">
+      <button class="admin-tab${adminTab==='contact'?' on':''}" onclick="setAdminTab('contact')">📞 Bog'lanish</button>
+      <button class="admin-tab${adminTab==='login'?' on':''}" onclick="setAdminTab('login')">🔐 Kirish</button>
+    </div>
+    <div class="admin-body">
+      ${adminTab==='contact'?adminContact():adminLogin()}
+    </div>
+  </div>`;
+}
+
+function adminContact(){
+  return `<div class="admin-title">Administrator bilan bog'lanish</div>
+    <div class="admin-sub">Ottimo HR bo'yicha savollar uchun quyidagi kanallar orqali murojaat qiling.</div>
+    <div class="admin-contact-card">
+      <div class="admin-contact-icon">💬</div>
+      <div>
+        <div class="admin-contact-name">Telegram</div>
+        <div class="admin-contact-val">@Ottimo_hr</div>
+      </div>
+      <a href="https://t.me/Ottimo_hr" target="_blank" style="margin-left:auto;background:var(--accent);color:#fff;border:none;border-radius:7px;padding:7px 12px;font-size:12px;font-weight:600;text-decoration:none;font-family:var(--font)">Ochish →</a>
+    </div>
+    <div class="admin-contact-card">
+      <div class="admin-contact-icon">📞</div>
+      <div>
+        <div class="admin-contact-name">Telefon</div>
+        <div class="admin-contact-val">+998 99 060 33 53</div>
+      </div>
+      <a href="tel:+998990603353" style="margin-left:auto;background:var(--bg4);color:var(--text);border:none;border-radius:7px;padding:7px 12px;font-size:12px;font-weight:600;text-decoration:none;font-family:var(--font)">Qo'ng'iroq</a>
+    </div>
+    <div class="admin-contact-card">
+      <div class="admin-contact-icon">🔗</div>
+      <div>
+        <div class="admin-contact-name">Ish uchun murojaat</div>
+        <div class="admin-contact-val">t.me/ottimo_uz</div>
+      </div>
+      <a href="https://t.me/ottimo_uz" target="_blank" style="margin-left:auto;background:var(--bg4);color:var(--text);border:none;border-radius:7px;padding:7px 12px;font-size:12px;font-weight:600;text-decoration:none;font-family:var(--font)">Ochish</a>
+    </div>`;
+}
+
+function adminLogin(){
+  return `<div class="admin-title">Rahbar paneli</div>
+    <div class="admin-sub">Imtihon natijalarini ko'rish uchun kiring.</div>
+    <input class="admin-inp" type="text" id="adName" placeholder="Ism Familiya"/>
+    <input class="admin-inp" type="password" id="adPass" placeholder="Parol" onkeydown="if(event.key==='Enter')adminLogin()"/>
+    <div class="admin-err" id="adErr">Parol noto'g'ri</div>
+    <button class="admin-login-btn" onclick="doAdminLogin()">Kirish →</button>`;
+}
+
+window.doAdminLogin = async function(){
+  const p=(document.getElementById('adPass')||{}).value||'';
+  const n=(document.getElementById('adName')||{}).value||'';
+  if(!n.trim()){document.getElementById('adErr').textContent='Ismingizni kiriting';document.getElementById('adErr').style.display='block';return;}
+  if(p!==MGR_PASS){document.getElementById('adErr').style.display='block';return;}
+  adminLoggedIn=true;
+  // load exams
+  try{
+    const snap=await getDocs(query(collection(db,'exams'),orderBy('ts','desc')));
+    adminExams=snap.docs.map(d=>{const x=d.data();x.id=d.id;return x;});
+  }catch(e){}
+  renderAdmin();
+};
+
+function adminDash(){
+  const passed=adminExams.filter(e=>e.sc>=85).length;
+  const mon=adminExams.filter(e=>e.sc>=65&&e.sc<85).length;
+  const fail=adminExams.filter(e=>e.sc<65).length;
+
+  let rows='';
+  adminExams.forEach(e=>{
+    const p=POS[e.position];
+    const c=e.sc>=85?'var(--green)':e.sc>=65?'#f59e0b':'var(--red)';
+    const isOpen=openExamId===e.id;
+    let qa='';
+    if(isOpen&&p){
+      p.q.forEach((q,i)=>{
+        const idx=parseInt((e.answers||{})[q.id]);
+        const a=(!isNaN(idx)&&q.o[idx])?q.o[idx]:'Javob berilmagan';
+        qa+=`<div class="qa-item"><div class="qa-q">${i+1}. ${ex(q.t)}</div><div class="qa-a">→ ${ex(a)}</div></div>`;
+      });
+    }
+    rows+=`<div class="exam-row" onclick="toggleExam('${e.id}')">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="exam-name">${ex(e.nm||'')}</div>
+          <div class="exam-meta">${p?p.l:'—'} · ${e.date||''} · ${ex(e.ph||'')} </div>
+        </div>
+        <div style="text-align:right">
+          <div class="exam-score" style="color:${c}">${e.sc}%</div>
+          <div style="margin-top:3px">${sb(e.sc)}</div>
+        </div>
+      </div>
+      ${isOpen?`<div class="exam-detail open">${qa||'<p style="color:var(--text3);font-size:12px;padding:8px 0">Javoblar yo\'q</p>'}</div>`:''}
+    </div>`;
+  });
+
+  return `<div class="admin-dash">
+    <div class="admin-dash-top">
+      <div style="font-size:20px">📊</div>
+      <div class="admin-dash-title">Natijalar paneli</div>
+      <div style="margin-left:auto;display:flex;gap:8px;font-size:12px">
+        <span style="color:var(--green)">✓ ${passed}</span>
+        <span style="color:#f59e0b">◎ ${mon}</span>
+        <span style="color:var(--red)">✗ ${fail}</span>
+      </div>
+      <button onclick="closeAdmin()" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;margin-left:8px">✕</button>
+    </div>
+    <div class="admin-dash-body">
+      ${adminExams.length?rows:'<p style="color:var(--text3);text-align:center;padding:32px">Hali natija yo\'q</p>'}
+    </div>
+  </div>`;
+}
+
+window.toggleExam = id=>{openExamId=openExamId===id?null:id;renderAdmin();};
+
+// ═══════════════════════════════════════
+//  GLOBAL OVERLAY CONTROLS
+// ═══════════════════════════════════════
+window.openHR = function(){
+  HR.step=1;HR.nm='';HR.em='';HR.ph='';HR.bd='';HR.ad='';
+  HR.pos='';HR.errs={};HR.ans={};HR.qi=0;HR.result=null;
+  document.getElementById('hrOverlay').classList.add('open');
+  hrRender();
+};
+window.closeHR = ()=>document.getElementById('hrOverlay').classList.remove('open');
+
+window.openAdmin = function(){
+  adminTab='contact';
+  document.getElementById('adminOverlay').classList.add('open');
+  renderAdmin();
+};
+window.closeAdmin = ()=>{
+  document.getElementById('adminOverlay').classList.remove('open');
+  adminLoggedIn=false; openExamId=null;
+};
+window.adminBgClose = e=>{if(e.target===document.getElementById('adminOverlay'))closeAdmin();};
+window.setAdminTab = t=>{adminTab=t;renderAdmin();};
+
+// ═══ INIT ═══
+newChat();
+</script>
+</body>
+</html>
