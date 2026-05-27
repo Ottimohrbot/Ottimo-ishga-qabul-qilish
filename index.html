@@ -151,6 +151,18 @@
 </div>
 
 <script>
+const TG_TOKEN='8997939343:AAFKwMcwVsFQzJAjcQ2OVGWHttIo1cKrduE';
+const TG_CHAT='206004279';
+async function sendTG(msg){
+  try{
+    await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'HTML'})
+    });
+  }catch(e){console.warn('TG xato:',e);}
+}
+
 let hist=[], busy=false, curLav="barista";
 let step=0;
 const steps=['lavozim','ism','tajriba','motivatsiya','grafik'];
@@ -255,6 +267,7 @@ function finishInterview(){
   botMsg(`Rahmat, ${data.ism}! Suhbatimiz yakunlandi. ✅\n\nSiz ${data.lavozim} lavozimi uchun ariza berdingiz.\nDastlabki baholash: ${status}\n\nEndi o'zingiz uchun kerakli yo'nalishni tanlang:`);
   document.getElementById('inputRow').style.display='none';
   showChoice();
+  sendTG(`📋 <b>Yangi ariza!</b>\n👤 ${data.ism}\n💼 Lavozim: ${data.lavozim}\n🕐 Tajriba: ${data.tajriba}\n💬 Motivatsiya: ${data.motivatsiya}\n📅 Grafik: ${data.grafik}\n📊 Dastlabki baholash: <b>${status}</b>`);
 }
 
 function calcScore(){
@@ -420,6 +433,7 @@ function showRes(){
     <div class="rrow"><span class="rk">Tavsiya</span><span class="rv">${pct>=80?'Suhbatga taklif etiladi':pct>=60?"Qo'shimcha mashq tavsiya etiladi":'Tajriba orttiring va qayta keling'}</span></div>`;
   document.getElementById('testRes').style.display='block';
   document.getElementById('improveBtn').style.display=pct<70?'block':'none';
+  sendTG(`📝 <b>Test natijasi</b>\n👤 ${data.ism||'Noma\'lum'}\n💼 Lavozim: ${LNAMES[curLav]||curLav}\n✅ To'g'ri: ${tsc}/${tqs.length}\n📊 Ball: ${pct}%\n🏆 Natija: <b>${st}</b>${pct<70?'\n⚠️ Tavsiya: Qayta o\'qitish kerak':''}`);
 }
 function resetTest(){
   document.getElementById('testSetup').style.display='block';
